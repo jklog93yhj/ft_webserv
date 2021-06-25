@@ -209,22 +209,26 @@ int		Server::readRequest(std::vector<Client*>::iterator it)
 	if (ret > 0)
 	{
 		client->rBuf[bytes] = '\0';
-		std::cout << "=-----------------0-" << std::endl;
+		
+		std::cout << "------------readRequest-----------" << std::endl;
 		std::cout << client->rBuf << std::endl;
-		std::cout << "=-----------------0-" << std::endl;
+		std::cout << "=----------------------------" << std::endl;
 		if (strstr(client->rBuf, "\r\n\r\n") != NULL
 			&& client->status != Client::BODYPARSING)
 		{
-			std::cout << "asjdioajo " << std::endl;
 			log = "REQUEST:\n";
 			log += client->rBuf;
+			// 직접 찍어보려면 HIGH 를 LOW로
 			g_logger.log(log, HIGH); // 이게뭐야?
-			std::cout << "asjdioajo " << std::endl;
+			//std::cout << "asjdioajo " << std::endl;
 			client->last_date = ft::getDate(); // 현재 날짜 파싱
-			std::cout << client->last_date << std::endl;
+			//std::cout << client->last_date << std::endl;
 			_parser.parseRequest(*client, _conf);
+			// 클라이언트 write로 들어가게 하기위해서
+			// fd상태 write로 변경
 			client->setWriteState(true);
 		}
+		// method == post or put
 		if (client->status == Client::BODYPARSING)
 			_parser.parseBody(*client);
 		return (1);
@@ -253,15 +257,20 @@ int		Server::writeResponse(std::vector<Client*>::iterator it)
 	switch (client->status)
 	{
 		case Client::RESPONSE:
+			std::cout << "writeresponse : response" << std::endl;
+			/*
 			std::cout << "=-----------------0-" << std::endl;
 			std::cout << client->response.c_str() << std::endl;
 			std::cout << "=-----------------0-" << std::endl;
+			*/
 			log = "RESPONSE:\n";
 			log += client->response.substr(0, 128);
-			g_logger.log(log, HIGH);
+			g_logger.log(log, LOW);
+			/*
 			std::cout << "log=-----------------0-" << std::endl;
 			std::cout << log << std::endl;
 			std::cout << "log=-----------------0-" << std::endl;
+			*/
 			bytes = write(client->fd, client->response.c_str(), client->response.size());
 			// response하고 나머지 뒷부분 파싱
 			if ((bytes != (unsigned long)-1) && (bytes < client->response.size()))
@@ -273,22 +282,33 @@ int		Server::writeResponse(std::vector<Client*>::iterator it)
 				if (bytes == (unsigned long)-1)
 					g_logger.log("Error: write()", LOW);
 			}
+			/*
 			std::cout << "=-----------------0-" << std::endl;
 			std::cout << client->response << std::endl;
 			std::cout << "=-----------------0-" << std::endl;
+			*/
 			client->last_date = ft::getDate();
 			break ;
 		case Client::STANDBY:
+			//모든 자료를 다 보내주고 다른 요청이
+			//들어오기 전까지 대기상태
+			//단, 10초 지나면 연결상태 끊음
+			//std::cout << "writeresponse : standby" << std::endl;
 			if (getTimeDiff(client->last_date) >= TIMEOUT)
 				client->status = Client::DONE;
 			break ;
 		case Client::DONE:
+			std::cout << "writeresponse : done" << std::endl;
 			delete client;
 			_clients.erase(it);
 			g_logger.log("[" + std::to_string(_port) + "] " + "connected clients: " + std::to_string(_clients.size()), LOW);
 			return (0);
 		default:
-			_dispatcher.execute(*client);
+			{
+				//맨처음에는 client가 CODE이기 때문에 이쪽으로 들어감
+				std::cout << "writeresponse : default" << std::endl;
+				_dispatcher.execute(*client);
+			}
 	}
 	return (1);
 }

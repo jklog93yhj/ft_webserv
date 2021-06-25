@@ -111,21 +111,19 @@ void			Parser::parseRequest(Client &client, std::vector<config> &conf)
     std::string			tmp;
     std::string			buffer;
 
+	std::cout << "[parseRequest]" << std::endl;
     buffer = std::string(client.rBuf);
     if (buffer[0] == '\r')
         buffer.erase(buffer.begin());
     if (buffer[0] == '\n')
         buffer.erase(buffer.begin());
-	// 첫줄 파싱
+	// 첫줄 파싱 -> GET / HTTP/1.1
     ft::getline(buffer, request.method, ' ');
-	std::cout << "parseRequest" << std::endl;
-	std::cout << request.method << std::endl;
     ft::getline(buffer, request.uri, ' ');
-	std::cout << request.uri << std::endl;
     ft::getline(buffer, request.version);
-	std::cout << request.version << std::endl;
-	std::cout << "parseRequest" << std::endl;
-	// 첫줄 빼고 나머지 파싱
+	// Map으로 헤더 파싱
+	// ex) Connection: keep-alive
+	// => request.headers[Connection] = keep-alive; 
     if (parseHeaders(buffer, request))
 		//첫줄을 바탕으로 예외처리
         request.valid = checkSyntax(request);
@@ -133,13 +131,16 @@ void			Parser::parseRequest(Client &client, std::vector<config> &conf)
     if (request.uri != "*" || request.method != "OPTIONS")
         getClientConf(client, request, conf);
 	
-	//status = 1 CODE가 뭐지 
+	//status = 1 switch문에서 CODE문 실행하기위해 변경 
 	client.status = Client::CODE;
 	// 메소드, 버전 등 모든 것이 맞는 경우
 	if (request.valid)
 	{
 		if (client.conf["root"][0] != '\0')
+		{
+			///dir = Users/hwyu/Desktop/webserv_taehkim/www/content
 			chdir(client.conf["root"].c_str());
+		}
 		if (request.method == "POST" || request.method == "PUT")
 			client.status = Client::BODYPARSING;
 	}
@@ -151,15 +152,11 @@ void			Parser::parseRequest(Client &client, std::vector<config> &conf)
 	// 공백있는 곳이 마지막이고
 	// 그 다음부터 다시 rBuf에 저장
 	// 716부분이 맨 마지막 부분
-	std::cout << " a = " << tmp[710] << std::endl;
-	std::cout << " a = " << tmp[711] << std::endl;
-	std::cout << " a = " << tmp[712] << std::endl;
-	std::cout << " a = " << tmp[713] << std::endl;
-	std::cout << " a = " << tmp[714] << std::endl;
-	std::cout << " a = " << tmp[715] << std::endl;
+	// tmp[713~715] = KST
     tmp = tmp.substr(tmp.find("\r\n\r\n") + 4);
+	//파싱한 부분 빼고 나머지 부분 rbuf에 갱신
     strcpy(client.rBuf, tmp.c_str());
-	std::cout << tmp.c_str() << std::endl;
+	//std::cout << tmp.c_str() << std::endl;
 }
 
 bool			Parser::parseHeaders(std::string &buf, Request &req)
@@ -179,8 +176,8 @@ bool			Parser::parseHeaders(std::string &buf, Request &req)
         {
             pos = line.find(':'); // : 있는 위치 포인터
             key = line.substr(0, pos); // : 앞에부분이 key
-			std::cout << "------------" << std::endl;
-			std::cout << key << std::endl;
+		//	std::cout << "------------" << std::endl;
+		//	std::cout << key << std::endl;
 			// 그 뒤에 모든 부분이 value
 			// 단, : 뒤에 스페이스 없는 경우 예외처리
             if (line[pos + 1] == ' ')

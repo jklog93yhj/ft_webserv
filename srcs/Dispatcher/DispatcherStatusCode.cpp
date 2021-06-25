@@ -9,8 +9,18 @@ int			Dispatcher::setStatusCode(Client &client)
         && client.req.method != "TRACE"
         && client.req.method != "OPTIONS")
     {
+		/*
+		 *
+		HTTP/1.1 200 OK
+		Content-Length: 398
+		Content-Type: text/html
+		Date: Fri, 25 Jun 2021 15:46:41 KST
+		Last-Modified: Mon, 21 Jun 2
+		 *
+		 */
         client.res.version = "HTTP/1.1";
         client.res.status_code = OK;
+		//찾는 문자열이 없는 경우 npos 리턴
         if (client.conf["methods"].find(client.req.method) == std::string::npos)
             client.res.status_code = NOTALLOWED;
         else if (client.conf.find("auth") != client.conf.end())

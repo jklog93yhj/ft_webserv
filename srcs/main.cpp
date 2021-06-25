@@ -73,12 +73,17 @@ int 	main(int ac, char **av)
 				if (ft::FT_FD_ISSET(client->fd, &writeSet))
 					if (!s->writeResponse(c))
 						break ;
+				//x
 				if (client->write_fd != -1)
 					if (ft::FT_FD_ISSET(client->write_fd, &writeSet))
 						client->writeFile();
+				//마지막으로 체크
 				if (client->read_fd != -1)
+				{
+					//std::cout << "one" << std::endl;
 					if (ft::FT_FD_ISSET(client->read_fd, &readSet))
 						client->readFile();
+				}
 			}
 		}
 	}

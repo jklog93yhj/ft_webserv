@@ -42,27 +42,36 @@ Dispatcher::Dispatcher()
 
 void    Dispatcher::execute(Client &client)
 {
+	//이쪽에서 위에 정의된 것을 바탕으로 함수 찾아서 들어감
+	// ex) method = GET이면 GETHEADMethod로 감
     (this->*method[client.req.method])(client);
 }
 
+
+// code -> header -> body -> body
 void	Dispatcher::GETHEADMethod(Client &client)
 {
 	// 파일 불러올때 그 정보 담기위한 곳
     struct stat	file_info;
-	//std::cout << "GETHEADMethod" << std::endl;
+	std::cout << "[ GETHEADMethod ]" << std::endl;
 
-	//만들어진 서버 4개가 전부 다 일로 들어오지만
-	//그중에 하나만 status 만족하는상태
     switch (client.status)
     {
         case Client::CODE:
-			std::cout << "GETHEADMethod2" << std::endl;
+			std::cout << "GETHEADMethod : CODE" << std::endl;
             setStatusCode(client);
+			/* fstat함수는 stat, lstat와 첫 번째 
+			 * 인자가 다른데, fstat함수는 첫번째
+			 * 인자로 파일 디스크립터 번호를 인자로 
+			 * 받고 stat와 동일한 기능을 수행한다.
+			*/
             fstat(client.read_fd, &file_info);
-			//??
+			// S_ISDIR = 디렉토리 파일인지 확인
+			// file_info.st_mode = 33188
+			// client.conf["listing"] == NULL
             if (S_ISDIR(file_info.st_mode) && client.conf["listing"] == "on")
                 createListing(client);
-			//??
+			// status_code = 200 OK
             if (client.res.status_code == NOTFOUND)
                 negotiate(client);
 			//x
@@ -79,6 +88,7 @@ void	Dispatcher::GETHEADMethod(Client &client)
             client.setFileToRead(true);
             break ;
         case Client::CGI:
+			std::cout << "GETHEADMethod : CGI" << std::endl;
 			//x
             if (client.read_fd == -1)
             {
@@ -87,37 +97,34 @@ void	Dispatcher::GETHEADMethod(Client &client)
             }
             break ;
         case Client::HEADERS:
-			std::cout << "GETHEADMethod2" << std::endl;
+			std::cout << "GETHEADMethod : HEADERS" << std::endl;
 			//파일정보 읽기
             lstat(client.conf["path"].c_str(), &file_info);
 			// 디렉토리인지 확인
-			std::cout << file_info.st_mode << std::endl;
+			// 33188
 			//디렉토리가 아니면
             if (!S_ISDIR(file_info.st_mode))
                 client.res.headers["Last-Modified"] = getLastModified(client.conf["path"]);
 			//type 세팅
             if (client.res.headers["Content-Type"][0] == '\0')
                 client.res.headers["Content-Type"] = findType(client);
+			//현재 statuscode는 200 OK
             if (client.res.status_code == UNAUTHORIZED)
-			{
-				std::cout << "GETHEADMethod3" << std::endl;
-
                 client.res.headers["WWW-Authenticate"] = "Basic";
-			}
             else if (client.res.status_code == NOTALLOWED)
-			{
                 client.res.headers["Allow"] = client.conf["methods"];
-				std::cout << "GETHEADMethod4" << std::endl;
-			}
             client.res.headers["Date"] = ft::getDate();
             client.res.headers["Server"] = "webserv";
             client.status = Client::BODY;
             break ;
         case Client::BODY:
-			std::cout << "GETHEADMethod2" << std::endl;
+			std::cout << "GETHEADMethod : BODY" << std::endl;
+			// 끝까지 다  읽은 경우?
+			// read_fd = 1
             if (client.read_fd == -1)
             {
                 client.res.headers["Content-Length"] = std::to_string(client.res.body.size());
+				//지금까지 파싱한 것들 string으로 병합
                 createResponse(client);
                 client.status = Client::RESPONSE;
             }

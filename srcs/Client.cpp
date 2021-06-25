@@ -113,15 +113,20 @@ void	Client::readFile()
 	}
 	// config파일을 읽는 단계
 	ret = read(read_fd, buffer, BUFFER_SIZE);
+	std::cout << "[ret] " << std::endl;
+	std::cout << buffer << std::endl;
+	std::cout << "[ret] " << std::endl;
 	// config파일을 body에 추가
 	if (ret >= 0)
 	{
+		std::cout << "ret >= 0 " << std::endl;
 		buffer[ret] = '\0';
 		std::string	tmp(buffer, ret);
 		res.body += tmp;
 	}
 	if (ret <= 0)
 	{
+		std::cout << "ret <= 0 " << std::endl;
 		close(read_fd);
 		unlink(TMP_PATH);
 		setFileToRead(false);
@@ -134,6 +139,7 @@ void	Client::readFile()
 void	Client::writeFile()
 {
 	int ret = 0;
+
 
 	/*
 	std::cout << "jaiosjcaiosjsoj+==========" << std::endl;

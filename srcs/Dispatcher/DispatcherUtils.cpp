@@ -13,6 +13,7 @@ void			Dispatcher::createListing(Client &client)
     DIR				*dir;
     struct dirent	*cur;
 
+	std::cout << "[createListing]" << std::endl;
     close(client.read_fd);
     client.read_fd = -1;
     dir = opendir(client.conf["path"].c_str());
@@ -41,6 +42,7 @@ void		    Dispatcher::createResponse(Client &client)
 {
     std::map<std::string, std::string>::const_iterator b;
 
+	// HTTP/1.1 200 OK
     client.response = client.res.version + " " + client.res.status_code + "\r\n";
     b = client.res.headers.begin();
     while (b != client.res.headers.end())
@@ -50,6 +52,7 @@ void		    Dispatcher::createResponse(Client &client)
         ++b;
     }
     client.response += "\r\n";
+	//body도 존재하면 body까지 추가
     if (client.req.method != "HEAD")
         client.response += client.res.body;
     client.res.clear();
