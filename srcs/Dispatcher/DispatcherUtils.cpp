@@ -131,9 +131,20 @@ std::string		Dispatcher::getLastModified(std::string path)
 
 bool            Dispatcher::checkCGI(Client &client)
 {
+    //if (client.conf.find("CGI") != client.conf.end())
+    //if (client.req.uri.find(client.conf["CGI"]) != std::string::npos)
+	//	std::cout << "true2" << std::endl;
+	//	client.conf["CGI"] = .bla
+	//	client.req.uri = /directory/.bla
     if (client.conf.find("CGI") != client.conf.end() && client.req.uri.find(client.conf["CGI"]) != std::string::npos)
             return true;
     else if (client.conf.find("php") != client.conf.end() && client.req.uri.find(".php") != std::string::npos)
+	{
+		std::cout << client.conf["php"] << std::endl;
+		std::cout << client.req.uri << std::endl;
+		std::cout << "true2" << std::endl;
             return true;
+	}
+	std::cout << "false " << std::endl;
     return false;
 }

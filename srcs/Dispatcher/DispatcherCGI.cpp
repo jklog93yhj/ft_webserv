@@ -71,8 +71,10 @@ void		Dispatcher::executeCGI(Client &client)
 
     if (client.conf["php"][0] && client.conf["path"].find(".php") != std::string::npos)
         path = client.conf["php"];
+	// conf안에 exec 뒷부분
     else if (client.conf["exec"][0])
         path = client.conf["exec"];
+	///Users/hwyu/Desktop/hwyu_webserv3/www/YoupiBanane/.bla => .bla가 붙음
     else
         path = client.conf["path"];
     close(client.read_fd);

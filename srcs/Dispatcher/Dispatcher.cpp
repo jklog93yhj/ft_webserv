@@ -75,6 +75,7 @@ void	Dispatcher::GETHEADMethod(Client &client)
             if (client.res.status_code == NOTFOUND)
                 negotiate(client);
 			//x
+			//std::cout << "status_code = " << client.res.status_code << std::endl;
             if (checkCGI(client) && client.res.status_code == OK)
             {
                 executeCGI(client);
@@ -137,10 +138,13 @@ void	Dispatcher::POSTMethod(Client &client)
     switch (client.status)
     {
         case Client::BODYPARSING:
+			std::cout << "POSTMethod : BODYPARSING" << std::endl;
             _parser.parseBody(client);
             break ;
         case Client::CODE:
+			std::cout << "POSTMethod : CODE " << std::endl;
             setStatusCode(client);
+			std::cout << "req.uri = " << client.req.uri << std::endl;
             if (checkCGI(client) && client.res.status_code == OK)
             {
                 executeCGI(client);
@@ -157,13 +161,16 @@ void	Dispatcher::POSTMethod(Client &client)
             }
             break ;
         case Client::CGI:
+			// fork 하고 오는 동안 무한루프 돌면서 대기
             if (client.read_fd == -1)
             {
+				std::cout << "POSTMethod : CGI" << std::endl;
                 _parser.parseCGIResult(client);
                 client.status = Client::HEADERS;
             }
             break ;
         case Client::HEADERS:
+			std::cout << "POSTMethod : HEADERS" << std::endl;
             if (client.res.status_code == UNAUTHORIZED)
                 client.res.headers["WWW-Authenticate"] = "Basic";
             else if (client.res.status_code == NOTALLOWED)
@@ -177,6 +184,7 @@ void	Dispatcher::POSTMethod(Client &client)
             client.status = Client::BODY;
             break ;
         case Client::BODY:
+			std::cout << "POSTMethod : BODY" << std::endl;
             if (client.read_fd == -1 && client.write_fd == -1)
             {
                 if (client.res.headers["Content-Length"][0] == '\0')

@@ -306,7 +306,7 @@ int		Server::writeResponse(std::vector<Client*>::iterator it)
 		default:
 			{
 				//맨처음에는 client가 CODE이기 때문에 이쪽으로 들어감
-				std::cout << "writeresponse : default" << std::endl;
+				std::cout << "writeresponse : default";
 				_dispatcher.execute(*client);
 			}
 	}

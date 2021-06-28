@@ -133,6 +133,7 @@ void			Parser::parseRequest(Client &client, std::vector<config> &conf)
 	
 	//status = 1 switch문에서 CODE문 실행하기위해 변경 
 	client.status = Client::CODE;
+	std::cout << "status = code " << std::endl;
 	// 메소드, 버전 등 모든 것이 맞는 경우
 	if (request.valid)
 	{
@@ -354,6 +355,7 @@ void			Parser::parseAccept(Client &client, std::multimap<double, std::string> &m
     double                              q;
 
     to_parse = client.req.headers[Accept];
+	std::cout << "to_parse = " << to_parse << std::endl;
     int i = 0;
     while (to_parse[i] != '\0')
     {
@@ -389,6 +391,7 @@ void		Parser::parseCGIResult(Client &client)
 
     if (client.res.body.find("\r\n\r\n") == std::string::npos)
         return ;
+	// Status : 200 OK
     headers = client.res.body.substr(0, client.res.body.find("\r\n\r\n") + 1);
     pos = headers.find("Status");
     if (pos != std::string::npos)
@@ -401,7 +404,10 @@ void		Parser::parseCGIResult(Client &client)
             pos++;
         }
     }
+	std::cout << "header = " << headers << std::endl;
     pos = 0;
+	// Status = 200 OK
+	// Content-Type = text/html; charset=utf-8
     while (headers[pos])
     {
         while (headers[pos] && headers[pos] != ':')
@@ -409,12 +415,14 @@ void		Parser::parseCGIResult(Client &client)
             key += headers[pos];
             ++pos;
         }
+		std::cout << "key = " << key << std::endl;
         ++pos;
         while (headers[pos] && headers[pos] != '\r')
         {
             value += headers[pos];
             ++pos;
         }
+		std::cout << "value = " << value << std::endl;
         client.res.headers[key] = value;
         key.clear();
         value.clear();

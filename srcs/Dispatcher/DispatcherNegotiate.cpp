@@ -14,8 +14,10 @@ void			Dispatcher::negotiate(Client &client)
     std::string		path;
     std::string		ext;
 
+	std::cout << "[ Dispatcher : negotiate ]" << std::endl;
     if (client.req.headers.find("Accept-Language") != client.req.headers.end())
         _parser.parseAccept(client, languageMap, "Accept-Language");
+	std::cout << "language = " << client.req.headers["Accept-Language"] << std::endl;
     if (client.req.headers.find("Accept-Charset") != client.req.headers.end())
         _parser.parseAccept(client, charsetMap, "Accept-Charset");
     if (!languageMap.empty())
@@ -27,6 +29,7 @@ void			Dispatcher::negotiate(Client &client)
                 for (std::multimap<double, std::string>::reverse_iterator it2(charsetMap.rbegin()); it2 != charsetMap.rend(); ++it2)
                 {
                     tmp_ext = it->second + "." + it2->second;
+					std::cout << "tmp_ext = " << tmp_ext << std::endl;
                     tmp_path = client.conf["savedpath"] + "." + tmp_ext;
                     tmp_fd = open(tmp_path.c_str(), O_RDONLY);
                     if (tmp_fd != -1)

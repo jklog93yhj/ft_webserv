@@ -4,6 +4,7 @@ int			Dispatcher::setStatusCode(Client &client)
 {
     std::string                 credential;
     int							ret;
+	std::cout << "[ setStatusCode ]" << std::endl;
 
     if (client.req.method != "CONNECT"
         && client.req.method != "TRACE"
@@ -21,6 +22,9 @@ int			Dispatcher::setStatusCode(Client &client)
         client.res.version = "HTTP/1.1";
         client.res.status_code = OK;
 		//찾는 문자열이 없는 경우 npos 리턴
+		// get에서 status_code를 처리할때 봐야될 것
+		// auth(config파일), Authorization, Basic
+		// config파일에 auth 가 있나 없나를 체크
         if (client.conf["methods"].find(client.req.method) == std::string::npos)
             client.res.status_code = NOTALLOWED;
         else if (client.conf.find("auth") != client.conf.end())
@@ -37,7 +41,9 @@ int			Dispatcher::setStatusCode(Client &client)
             }
         }
     }
+	// GETHEADStatus로 넘어감
     ret = (this->*status[client.req.method])(client);
+	std::cout << "ret = " << ret << std::endl;
     if (ret == 0)
         getErrorPage(client);
     return (ret);
@@ -50,6 +56,8 @@ int			Dispatcher::GETHEADStatus(Client &client)
     if (client.res.status_code == OK)
     {
         errno = 0;
+		std::cout << "client path = " << client.conf["path"].c_str() << std::endl;
+		// path = Users/hwyu/Desktop/hwyu_webserv3/www/content/oldindex.html
         client.read_fd = open(client.conf["path"].c_str(), O_RDONLY);
         if (client.read_fd == -1 && errno == ENOENT)
             client.res.status_code = NOTFOUND;
@@ -58,6 +66,7 @@ int			Dispatcher::GETHEADStatus(Client &client)
         else
         {
             fstat(client.read_fd, &info);
+			// listing 검사를 왜하는지?
             if (!S_ISDIR(info.st_mode)
                 || (S_ISDIR(info.st_mode) && client.conf["listing"] == "on"))
                 return (1);
