@@ -3,61 +3,97 @@
 char		**Dispatcher::setCGIEnv(Client &client)
 {
     char											**env;
-    std::map<std::string, std::string> 				envMap;
+    std::map<std::string, std::string> 				env_tmp;
     size_t											pos;
 
-    envMap["GATEWAY_INTERFACE"] = "CGI/1.1";
-    envMap["SERVER_PROTOCOL"] = "HTTP/1.1";
-    envMap["SERVER_SOFTWARE"] = "webserv";
-    envMap["REQUEST_URI"] = client.req.uri;
-    envMap["REQUEST_METHOD"] = client.req.method;
-    envMap["REMOTE_ADDR"] = client.ip;
-    envMap["PATH_INFO"] = client.req.uri;
-    envMap["PATH_TRANSLATED"] = client.conf["path"];
-    envMap["CONTENT_LENGTH"] = std::to_string(client.req.body.size());
-
-    if (client.req.uri.find('?') != std::string::npos)
-        envMap["QUERY_STRING"] = client.req.uri.substr(client.req.uri.find('?') + 1);
-    else
-        envMap["QUERY_STRING"];
+	env_tmp["CONTENT_LENGTH"] = std::to_string(client.req.body.size());
     if (client.req.headers.find("Content-Type") != client.req.headers.end())
-        envMap["CONTENT_TYPE"] = client.req.headers["Content-Type"];
-    if (client.conf.find("exec") != client.conf.end())
-        envMap["SCRIPT_NAME"] = client.conf["exec"];
+        env_tmp["CONTENT_TYPE"] = client.req.headers["Content-Type"];
+    env_tmp["GATEWAY_INTERFACE"] = "CGI/1.1";
+    env_tmp["PATH_INFO"] = client.req.uri;
+    env_tmp["PATH_TRANSLATED"] = client.conf["path"];
+    if (client.req.uri.find('?') != std::string::npos)
+        env_tmp["QUERY_STRING"] = client.req.uri.substr(client.req.uri.find('?') + 1);
     else
-        envMap["SCRIPT_NAME"] = client.conf["path"];
+        env_tmp["QUERY_STRING"];
+    env_tmp["REMOTE_ADDR"] = client.ip;
+    env_tmp["REQUEST_METHOD"] = client.req.method;
+    env_tmp["REQUEST_URI"] = client.req.uri;
+    if (client.conf.find("exec") != client.conf.end())
+        env_tmp["SCRIPT_NAME"] = client.conf["exec"];
+    else
+        env_tmp["SCRIPT_NAME"] = client.conf["path"];
     if (client.conf["listen"].find(":") != std::string::npos)
     {
-        envMap["SERVER_NAME"] = client.conf["listen"].substr(0, client.conf["listen"].find(":"));
-        envMap["SERVER_PORT"] = client.conf["listen"].substr(client.conf["listen"].find(":") + 1);
+        env_tmp["SERVER_NAME"] = client.conf["listen"].substr(0, client.conf["listen"].find(":"));
+        env_tmp["SERVER_PORT"] = client.conf["listen"].substr(client.conf["listen"].find(":") + 1);
     }
     else
-        envMap["SERVER_PORT"] = client.conf["listen"];
+        env_tmp["SERVER_PORT"] = client.conf["listen"];
+    env_tmp["SERVER_PROTOCOL"] = "HTTP/1.1";
+    env_tmp["SERVER_SOFTWARE"] = "webserv";
     if (client.req.headers.find("Authorization") != client.req.headers.end())
     {
         pos = client.req.headers["Authorization"].find(" ");
-        envMap["AUTH_TYPE"] = client.req.headers["Authorization"].substr(0, pos);
-        envMap["REMOTE_USER"] = client.req.headers["Authorization"].substr(pos + 1);
-        envMap["REMOTE_IDENT"] = client.req.headers["Authorization"].substr(pos + 1);
+        env_tmp["AUTH_TYPE"] = client.req.headers["Authorization"].substr(0, pos);
+        env_tmp["REMOTE_USER"] = client.req.headers["Authorization"].substr(pos + 1);
+        env_tmp["REMOTE_IDENT"] = client.req.headers["Authorization"].substr(pos + 1);
     }
+	// 이 밑에 2개는 pdf에 없는거
+	
     if (client.conf.find("php") != client.conf.end() && client.req.uri.find(".php") != std::string::npos)
-        envMap["REDIRECT_STATUS"] = "200";
+        env_tmp["REDIRECT_STATUS"] = "200";
     std::map<std::string, std::string>::iterator b = client.req.headers.begin();
     while (b != client.req.headers.end())
     {
-        envMap["HTTP_" + b->first] = b->second;
+        env_tmp["HTTP_" + b->first] = b->second;
         ++b;
     }
-    env = (char **)malloc(sizeof(char *) * (envMap.size() + 1));
-    std::map<std::string, std::string>::iterator it = envMap.begin();
+	
+    env = (char **)malloc(sizeof(char *) * (env_tmp.size() + 1));
+    std::map<std::string, std::string>::iterator it = env_tmp.begin();
     int i = 0;
-    while (it != envMap.end())
+    while (it != env_tmp.end())
     {
         env[i] = strdup((it->first + "=" + it->second).c_str());
         ++i;
         ++it;
     }
     env[i] = NULL;
+	std::cout << "AUTH_TYPE = ";
+	std::cout << env_tmp["AUTH_TYPE"] << std::endl;
+	std::cout << "CONTENT_LENGTH = ";
+	std::cout << env_tmp["CONTENT_LENGTH"] << std::endl;
+	std::cout << "CONTENT_TYPE = ";
+	std::cout << env_tmp["CONTENT_TYPE"] << std::endl;
+	std::cout << "GATEWAY_INTERFACE = ";
+	std::cout << env_tmp["GATEWAY_INTERFACE"] << std::endl;
+	std::cout << "PATH_INFO = ";
+	std::cout << env_tmp["PATH_INFO"] << std::endl;
+	std::cout << "PATH_TRANSLATED = ";
+	std::cout << env_tmp["PATH_TRANSLATED"] << std::endl;
+	std::cout << "QUERY_STRING = ";
+	std::cout << env_tmp["QUERY_STRING"] << std::endl;
+	std::cout << "REMOTE_ADDR = ";
+	std::cout << env_tmp["REMOTE_ADDR"] << std::endl;
+	std::cout << "REMOTE_IDENT = ";
+	std::cout << env_tmp["REMOTE_IDENT"] << std::endl;
+	std::cout << "REMOTE_USER = ";
+	std::cout << env_tmp["REMOTE_USER"] << std::endl;
+	std::cout << "REQUEST_METHOD = ";
+	std::cout << env_tmp["REQUEST_METHOD"] << std::endl;
+	std::cout << "REQUEST_URI = ";
+	std::cout << env_tmp["REQUEST_URI"] << std::endl;
+	std::cout << "SCRIPT_NAME = ";
+	std::cout << env_tmp["SCRIPT_NAME"] << std::endl;
+	std::cout << "SERVER_NAME = ";
+	std::cout << env_tmp["SERVER_NAME"] << std::endl;
+	std::cout << "SERVER_PORT = ";
+	std::cout << env_tmp["SERVER_PORT"] << std::endl;
+	std::cout << "SERVER_PROTOCOL = ";
+	std::cout << env_tmp["SERVER_PROTOCOL"] << std::endl;
+	std::cout << "SERVER_SOFTWARE = ";
+	std::cout << env_tmp["SERVER_SOFTWARE"] << std::endl;
     return (env);
 }
 
@@ -69,6 +105,7 @@ void		Dispatcher::executeCGI(Client &client)
     int				ret;
     int				tubes[2];
 
+	std::cout << "[ executeCGI ]" << std::endl;
     if (client.conf["php"][0] && client.conf["path"].find(".php") != std::string::npos)
         path = client.conf["php"];
 	// conf안에 exec 뒷부분
@@ -84,14 +121,18 @@ void		Dispatcher::executeCGI(Client &client)
     args[1] = strdup(client.conf["path"].c_str());
     args[2] = NULL;
     env = setCGIEnv(client);
+	//TMP_PATH = /tmp/cgi.tmp
+//	open client1 cGI -> open cgi.tmp
+//		client2 CGI -> open cgi4.tmp
     client.tmp_fd = open(TMP_PATH, O_WRONLY | O_CREAT, 0666);
     pipe(tubes);
     g_logger.log("executing CGI for " + client.ip + ":" + std::to_string(client.port), MED);
     if ((client.cgi_pid = fork()) == 0)
     {
+	//	ret = execve(path.c_str(), args, env);
         close(tubes[1]);
-        dup2(tubes[0], 0);
-        dup2(client.tmp_fd, 1);
+		dup2(tubes[0], 0); // stdin
+        dup2(client.tmp_fd, 1); //stdout
         errno = 0;
         ret = execve(path.c_str(), args, env);
         if (ret == -1)
@@ -106,6 +147,7 @@ void		Dispatcher::executeCGI(Client &client)
         client.write_fd = tubes[1];
         client.read_fd = open(TMP_PATH, O_RDONLY);
         client.setFileToWrite(true);
+		std::cout << "CGI else " << std::endl;
     }
     ft::freeAll(args, env);
 }

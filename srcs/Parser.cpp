@@ -433,5 +433,6 @@ void		Parser::parseCGIResult(Client &client)
     }
     pos = client.res.body.find("\r\n\r\n") + 4;
     client.res.body = client.res.body.substr(pos);
+	std::cout << "client.res.body = " << client.res.body << std::endl;
     client.res.headers["Content-Length"] = std::to_string(client.res.body.size());
 }

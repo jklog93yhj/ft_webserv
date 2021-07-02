@@ -91,6 +91,7 @@ void	Client::readFile()
 	int				ret = 0;
 	int				status = 0;
 
+	std::cout << "[ readFile ] ";
 	if (cgi_pid != -1) // cgi가 주어진 경우
 	{
 		if (waitpid((pid_t)cgi_pid, (int *)&status, (int)WNOHANG) == 0)
@@ -146,7 +147,10 @@ void	Client::writeFile()
 	std::cout << req.body.c_str() << std::endl;
 	std::cout << "jaiosjcaiosjsoj+==========" << std::endl;
 	*/
+	std::cout << "[ writeFile ]";
 	ret = write(write_fd, req.body.c_str(), req.body.size());
+	std::cout << "ret = " << ret << std::endl;
+	std::cout << "body = " << req.body.c_str() << std::endl;
 	if (ret == -1)
 	{
 		req.body.clear();
@@ -164,6 +168,7 @@ void	Client::writeFile()
 		req.body = req.body.substr(ret);
 	else
 	{
+		std::cout << "writeFile else" << std::endl;
 		req.body.clear();
 		close(write_fd);
 		setFileToWrite(false);

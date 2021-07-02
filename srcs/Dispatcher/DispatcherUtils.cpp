@@ -43,6 +43,7 @@ void		    Dispatcher::createResponse(Client &client)
     std::map<std::string, std::string>::const_iterator b;
 
 	// HTTP/1.1 200 OK
+	std::cout << "[ createResponse ]" << std::endl;
     client.response = client.res.version + " " + client.res.status_code + "\r\n";
     b = client.res.headers.begin();
     while (b != client.res.headers.end())

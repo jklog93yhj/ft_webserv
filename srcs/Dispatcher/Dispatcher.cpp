@@ -150,6 +150,7 @@ void	Dispatcher::POSTMethod(Client &client)
                 executeCGI(client);
                 client.status = Client::CGI;
                 client.setFileToRead(true);
+				std::cout << "client body = ";
             }
             else
             {
@@ -165,6 +166,8 @@ void	Dispatcher::POSTMethod(Client &client)
             if (client.read_fd == -1)
             {
 				std::cout << "POSTMethod : CGI" << std::endl;
+				std::cout << "client body = ";
+				std::cout << client.res.body << std::endl;
                 _parser.parseCGIResult(client);
                 client.status = Client::HEADERS;
             }
