@@ -67,10 +67,10 @@ int 	main(int ac, char **av)
 			for (std::vector<Client*>::iterator c(s->_clients.begin()); c != s->_clients.end(); ++c)
 			{
 				client = *c;
-				if (ft::FT_FD_ISSET(client->fd, &readSet)) // request 요청 처리
+				if (ft::FT_FD_ISSET(client->fd, &readSet)) // request 처리
 					if (!s->readRequest(c))
 						break ;
-				if (ft::FT_FD_ISSET(client->fd, &writeSet)) // response 요청 처리
+				if (ft::FT_FD_ISSET(client->fd, &writeSet)) // response 처리
 					if (!s->writeResponse(c))
 						break ;
 				if (client->write_fd != -1)

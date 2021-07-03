@@ -111,7 +111,6 @@ void			Parser::parseRequest(Client &client, std::vector<config> &conf)
     std::string			tmp;
     std::string			buffer;
 
-	std::cout << "[parseRequest]" << std::endl;
     buffer = std::string(client.rBuf);
     if (buffer[0] == '\r')
         buffer.erase(buffer.begin());
@@ -123,17 +122,16 @@ void			Parser::parseRequest(Client &client, std::vector<config> &conf)
     ft::getline(buffer, request.version);
 	// Map으로 헤더 파싱
 	// ex) Connection: keep-alive
-	// => request.headers[Connection] = keep-alive; 
+	// => request.headers[Connection] = keep-alive;
     if (parseHeaders(buffer, request))
 		//첫줄을 바탕으로 예외처리
         request.valid = checkSyntax(request);
 	//이쪽 공부해야됨
     if (request.uri != "*" || request.method != "OPTIONS")
         getClientConf(client, request, conf);
-	
-	//status = 1 switch문에서 CODE문 실행하기위해 변경 
+
+	//status = 1 switch문에서 CODE문 실행하기위해 변경
 	client.status = Client::CODE;
-	std::cout << "status = code " << std::endl;
 	// 메소드, 버전 등 모든 것이 맞는 경우
 	if (request.valid)
 	{
@@ -152,12 +150,9 @@ void			Parser::parseRequest(Client &client, std::vector<config> &conf)
     tmp = client.rBuf;
 	// 공백있는 곳이 마지막이고
 	// 그 다음부터 다시 rBuf에 저장
-	// 716부분이 맨 마지막 부분
-	// tmp[713~715] = KST
     tmp = tmp.substr(tmp.find("\r\n\r\n") + 4);
 	//파싱한 부분 빼고 나머지 부분 rbuf에 갱신
     strcpy(client.rBuf, tmp.c_str());
-	//std::cout << tmp.c_str() << std::endl;
 }
 
 bool			Parser::parseHeaders(std::string &buf, Request &req)
@@ -177,8 +172,6 @@ bool			Parser::parseHeaders(std::string &buf, Request &req)
         {
             pos = line.find(':'); // : 있는 위치 포인터
             key = line.substr(0, pos); // : 앞에부분이 key
-		//	std::cout << "------------" << std::endl;
-		//	std::cout << key << std::endl;
 			// 그 뒤에 모든 부분이 value
 			// 단, : 뒤에 스페이스 없는 경우 예외처리
             if (line[pos + 1] == ' ')
@@ -312,7 +305,6 @@ void			Parser::fillBody(Client &client)
 
 void			Parser::dechunkBody(Client &client)
 {
-	std::cout << "chunked = " << client.chunk.len << std::endl;
 	if (strstr(client.rBuf, "\r\n") && client.chunk.found == false)
 	{
 		client.chunk.len = findLen(client);
@@ -356,7 +348,6 @@ void			Parser::parseAccept(Client &client, std::multimap<double, std::string> &m
     double                              q;
 
     to_parse = client.req.headers[Accept];
-	std::cout << "to_parse = " << to_parse << std::endl;
     int i = 0;
     while (to_parse[i] != '\0')
     {
@@ -405,7 +396,6 @@ void		Parser::parseCGIResult(Client &client)
             pos++;
         }
     }
-	std::cout << "header = " << headers << std::endl;
     pos = 0;
 	// Status = 200 OK
 	// Content-Type = text/html; charset=utf-8
@@ -416,14 +406,12 @@ void		Parser::parseCGIResult(Client &client)
             key += headers[pos];
             ++pos;
         }
-		std::cout << "key = " << key << std::endl;
         ++pos;
         while (headers[pos] && headers[pos] != '\r')
         {
             value += headers[pos];
             ++pos;
         }
-		std::cout << "value = " << value << std::endl;
         client.res.headers[key] = value;
         key.clear();
         value.clear();
@@ -434,6 +422,5 @@ void		Parser::parseCGIResult(Client &client)
     }
     pos = client.res.body.find("\r\n\r\n") + 4;
     client.res.body = client.res.body.substr(pos);
-	std::cout << "client.res.body = " << client.res.body << std::endl;
     client.res.headers["Content-Length"] = std::to_string(client.res.body.size());
 }

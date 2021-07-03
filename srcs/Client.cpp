@@ -1,5 +1,6 @@
 #include "package.hpp"
 
+
 Client::Client(int filed, fd_set *r, fd_set *w, struct sockaddr_in info)
 : fd(filed), read_fd(-1), write_fd(-1), status(STANDBY), cgi_pid(-1), tmp_fd(-1), rSet(r), wSet(w)
 {
@@ -46,7 +47,6 @@ Client::~Client()
 	g_logger.log("connection closed from " + ip + ":" + std::to_string(port), LOW);
 }
 
-// 읽는상태로 변환(리퀘스트)
 void	Client::setReadState(bool state)
 {
 	if (state)
@@ -55,7 +55,6 @@ void	Client::setReadState(bool state)
 		ft::FT_FD_CLR(fd, rSet);
 }
 
-//쓰기 상태로 변환(리스펀스)
 void	Client::setWriteState(bool state)
 {
 	if (state)
@@ -64,7 +63,6 @@ void	Client::setWriteState(bool state)
 		ft::FT_FD_CLR(fd, wSet);
 }
 
-// 파일읽기로 변환
 void	Client::setFileToRead(bool state)
 {
 	if (read_fd != -1)
@@ -76,7 +74,6 @@ void	Client::setFileToRead(bool state)
 	}
 }
 
-//파일쓰기로 변환
 void	Client::setFileToWrite(bool state)
 {
 	if (write_fd != -1)

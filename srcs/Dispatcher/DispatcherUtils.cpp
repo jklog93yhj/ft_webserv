@@ -8,6 +8,7 @@ static const int B64index[256] = { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
                                    0,  0,  0, 63,  0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
                                    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51 };
 
+// listing mode
 void			Dispatcher::createListing(Client &client)
 {
     DIR				*dir;
@@ -18,10 +19,13 @@ void			Dispatcher::createListing(Client &client)
     dir = opendir(client.conf["path"].c_str());
     client.res.body = "<html>\n<body>\n";
     client.res.body += "<h1>Directory listing</h1>\n";
+
+    // dir 을 계속 읽어간다.
     while ((cur = readdir(dir)) != NULL)
     {
         if (cur->d_name[0] != '.')
         {
+            // .이나 .. 이 아니면, 링크를 생성
             client.res.body += "<a href=\"" + client.req.uri;
             if (client.req.uri != "/")
                 client.res.body += "/";
@@ -111,6 +115,7 @@ void			Dispatcher::getErrorPage(Client &client)
     client.read_fd = open(path.c_str(), O_RDONLY);
 }
 
+// time_t        st_mtime;    /* time of last modification */
 std::string		Dispatcher::getLastModified(std::string path)
 {
     char		buf[BUFFER_SIZE + 1];
@@ -121,6 +126,7 @@ std::string		Dispatcher::getLastModified(std::string path)
     if (lstat(path.c_str(), &file_info) == -1)
         return ("");
     tm = localtime(&file_info.st_mtime);
+    // https://www.cplusplus.com/reference/ctime/strftime/
     ret = strftime(buf, BUFFER_SIZE, "%a, %d %b %Y %T %Z", tm);
     buf[ret] = '\0';
     return (buf);

@@ -1,6 +1,7 @@
 #include "package.hpp"
 
 // execve할때 CGI env 필요하므로 파싱
+// Notion Page 참고
 char		**Dispatcher::setCGIEnv(Client &client)
 {
     char											**env;
