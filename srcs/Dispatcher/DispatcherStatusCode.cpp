@@ -4,8 +4,6 @@ int			Dispatcher::setStatusCode(Client &client)
 {
     std::string                 credential;
     int							ret;
-	std::cout << "[ setStatusCode ]" << std::endl;
-
     if (client.req.method != "CONNECT"
         && client.req.method != "TRACE"
         && client.req.method != "OPTIONS")
@@ -43,7 +41,6 @@ int			Dispatcher::setStatusCode(Client &client)
     }
 	// GETHEADStatus로 넘어감
     ret = (this->*status[client.req.method])(client);
-	std::cout << "ret = " << ret << std::endl;
     if (ret == 0)
         getErrorPage(client);
     return (ret);
@@ -56,7 +53,6 @@ int			Dispatcher::GETHEADStatus(Client &client)
     if (client.res.status_code == OK)
     {
         errno = 0;
-		std::cout << "client path = " << client.conf["path"].c_str() << std::endl;
 		// path = Users/hwyu/Desktop/hwyu_webserv3/www/content/oldindex.html
         client.read_fd = open(client.conf["path"].c_str(), O_RDONLY);
         if (client.read_fd == -1 && errno == ENOENT)
@@ -66,7 +62,6 @@ int			Dispatcher::GETHEADStatus(Client &client)
         else
         {
             fstat(client.read_fd, &info);
-			// listing 검사를 왜하는지?
             if (!S_ISDIR(info.st_mode)
                 || (S_ISDIR(info.st_mode) && client.conf["listing"] == "on"))
                 return (1);

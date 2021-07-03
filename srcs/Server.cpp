@@ -270,7 +270,6 @@ int		Server::writeResponse(std::vector<Client*>::iterator it)
 			std::cout << "log=-----------------0-" << std::endl;
 			std::cout << client->response.c_str() << std::endl;
 			std::cout << "log=-----------------0-" << std::endl;
-			
 			bytes = write(client->fd, client->response.c_str(), client->response.size());
 			// response하고 나머지 뒷부분 파싱
 			if ((bytes != (unsigned long)-1) && (bytes < client->response.size()))

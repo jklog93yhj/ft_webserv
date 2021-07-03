@@ -53,12 +53,10 @@ void	Dispatcher::GETHEADMethod(Client &client)
 {
 	// 파일 불러올때 그 정보 담기위한 곳
     struct stat	file_info;
-	std::cout << "[ GETHEADMethod ]" << std::endl;
 
     switch (client.status)
     {
         case Client::CODE:
-			std::cout << "GETHEADMethod : CODE" << std::endl;
             setStatusCode(client);
 			/* fstat함수는 stat, lstat와 첫 번째 
 			 * 인자가 다른데, fstat함수는 첫번째
@@ -89,8 +87,7 @@ void	Dispatcher::GETHEADMethod(Client &client)
             client.setFileToRead(true);
             break ;
         case Client::CGI:
-			std::cout << "GETHEADMethod : CGI" << std::endl;
-			//x
+			//read값 바뀌기전까지 대기
             if (client.read_fd == -1)
             {
                 _parser.parseCGIResult(client);
@@ -98,18 +95,14 @@ void	Dispatcher::GETHEADMethod(Client &client)
             }
             break ;
         case Client::HEADERS:
-			std::cout << "GETHEADMethod : HEADERS" << std::endl;
 			//파일정보 읽기
             lstat(client.conf["path"].c_str(), &file_info);
-			// 디렉토리인지 확인
-			// 33188
 			//디렉토리가 아니면
             if (!S_ISDIR(file_info.st_mode))
                 client.res.headers["Last-Modified"] = getLastModified(client.conf["path"]);
 			//type 세팅
             if (client.res.headers["Content-Type"][0] == '\0')
                 client.res.headers["Content-Type"] = findType(client);
-			//현재 statuscode는 200 OK
             if (client.res.status_code == UNAUTHORIZED)
                 client.res.headers["WWW-Authenticate"] = "Basic";
             else if (client.res.status_code == NOTALLOWED)
@@ -119,7 +112,6 @@ void	Dispatcher::GETHEADMethod(Client &client)
             client.status = Client::BODY;
             break ;
         case Client::BODY:
-			std::cout << "GETHEADMethod : BODY" << std::endl;
 			// 끝까지 다  읽은 경우?
 			// read_fd = 1
             if (client.read_fd == -1)
@@ -138,19 +130,15 @@ void	Dispatcher::POSTMethod(Client &client)
     switch (client.status)
     {
         case Client::BODYPARSING:
-			std::cout << "POSTMethod : BODYPARSING" << std::endl;
             _parser.parseBody(client);
             break ;
         case Client::CODE:
-			std::cout << "POSTMethod : CODE " << std::endl;
             setStatusCode(client);
-			std::cout << "req.uri = " << client.req.uri << std::endl;
             if (checkCGI(client) && client.res.status_code == OK)
             {
                 executeCGI(client);
                 client.status = Client::CGI;
                 client.setFileToRead(true);
-				std::cout << "client body = ";
             }
             else
             {
@@ -165,15 +153,11 @@ void	Dispatcher::POSTMethod(Client &client)
 			// fork 하고 오는 동안 무한루프 돌면서 대기
             if (client.read_fd == -1)
             {
-				std::cout << "POSTMethod : CGI" << std::endl;
-				std::cout << "client body = ";
-				std::cout << client.res.body << std::endl;
                 _parser.parseCGIResult(client);
                 client.status = Client::HEADERS;
             }
             break ;
         case Client::HEADERS:
-			std::cout << "POSTMethod : HEADERS" << std::endl;
             if (client.res.status_code == UNAUTHORIZED)
                 client.res.headers["WWW-Authenticate"] = "Basic";
             else if (client.res.status_code == NOTALLOWED)
@@ -187,7 +171,6 @@ void	Dispatcher::POSTMethod(Client &client)
             client.status = Client::BODY;
             break ;
         case Client::BODY:
-			std::cout << "POSTMethod : BODY" << std::endl;
             if (client.read_fd == -1 && client.write_fd == -1)
             {
                 if (client.res.headers["Content-Length"][0] == '\0')

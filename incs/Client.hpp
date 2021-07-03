@@ -1,6 +1,6 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
-# define BUFFER_SIZE 32768
+# define BUFFER_SIZE 30234
 # define TMP_PATH "/tmp/cgi.tmp"
 # include "package.hpp"
 

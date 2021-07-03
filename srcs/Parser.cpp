@@ -312,6 +312,7 @@ void			Parser::fillBody(Client &client)
 
 void			Parser::dechunkBody(Client &client)
 {
+	std::cout << "chunked = " << client.chunk.len << std::endl;
 	if (strstr(client.rBuf, "\r\n") && client.chunk.found == false)
 	{
 		client.chunk.len = findLen(client);

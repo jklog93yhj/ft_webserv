@@ -1,5 +1,6 @@
 #include "package.hpp"
 
+// execve할때 CGI env 필요하므로 파싱
 char		**Dispatcher::setCGIEnv(Client &client)
 {
     char											**env;
@@ -39,8 +40,6 @@ char		**Dispatcher::setCGIEnv(Client &client)
         env_tmp["REMOTE_USER"] = client.req.headers["Authorization"].substr(pos + 1);
         env_tmp["REMOTE_IDENT"] = client.req.headers["Authorization"].substr(pos + 1);
     }
-	// 이 밑에 2개는 pdf에 없는거
-	
     if (client.conf.find("php") != client.conf.end() && client.req.uri.find(".php") != std::string::npos)
         env_tmp["REDIRECT_STATUS"] = "200";
     std::map<std::string, std::string>::iterator b = client.req.headers.begin();
@@ -49,7 +48,6 @@ char		**Dispatcher::setCGIEnv(Client &client)
         env_tmp["HTTP_" + b->first] = b->second;
         ++b;
     }
-	
     env = (char **)malloc(sizeof(char *) * (env_tmp.size() + 1));
     std::map<std::string, std::string>::iterator it = env_tmp.begin();
     int i = 0;
@@ -60,6 +58,7 @@ char		**Dispatcher::setCGIEnv(Client &client)
         ++it;
     }
     env[i] = NULL;
+	/*
 	std::cout << "AUTH_TYPE = ";
 	std::cout << env_tmp["AUTH_TYPE"] << std::endl;
 	std::cout << "CONTENT_LENGTH = ";
@@ -94,6 +93,7 @@ char		**Dispatcher::setCGIEnv(Client &client)
 	std::cout << env_tmp["SERVER_PROTOCOL"] << std::endl;
 	std::cout << "SERVER_SOFTWARE = ";
 	std::cout << env_tmp["SERVER_SOFTWARE"] << std::endl;
+	*/
     return (env);
 }
 
@@ -105,7 +105,7 @@ void		Dispatcher::executeCGI(Client &client)
     int				ret;
     int				tubes[2];
 
-	std::cout << "[ executeCGI ]" << std::endl;
+	//bin/ls /User/hwyu/asd
     if (client.conf["php"][0] && client.conf["path"].find(".php") != std::string::npos)
         path = client.conf["php"];
 	// conf안에 exec 뒷부분
@@ -122,14 +122,11 @@ void		Dispatcher::executeCGI(Client &client)
     args[2] = NULL;
     env = setCGIEnv(client);
 	//TMP_PATH = /tmp/cgi.tmp
-//	open client1 cGI -> open cgi.tmp
-//		client2 CGI -> open cgi4.tmp
     client.tmp_fd = open(TMP_PATH, O_WRONLY | O_CREAT, 0666);
     pipe(tubes);
     g_logger.log("executing CGI for " + client.ip + ":" + std::to_string(client.port), MED);
     if ((client.cgi_pid = fork()) == 0)
     {
-	//	ret = execve(path.c_str(), args, env);
         close(tubes[1]);
 		dup2(tubes[0], 0); // stdin
         dup2(client.tmp_fd, 1); //stdout
@@ -147,7 +144,6 @@ void		Dispatcher::executeCGI(Client &client)
         client.write_fd = tubes[1];
         client.read_fd = open(TMP_PATH, O_RDONLY);
         client.setFileToWrite(true);
-		std::cout << "CGI else " << std::endl;
     }
     ft::freeAll(args, env);
 }

@@ -13,14 +13,11 @@ void			Dispatcher::createListing(Client &client)
     DIR				*dir;
     struct dirent	*cur;
 
-	std::cout << "[createListing]" << std::endl;
     close(client.read_fd);
     client.read_fd = -1;
     dir = opendir(client.conf["path"].c_str());
     client.res.body = "<html>\n<body>\n";
     client.res.body += "<h1>Directory listing</h1>\n";
-	std::cout << "createListing" << std::endl;
-	std::cout << client.res.body << std::endl;
     while ((cur = readdir(dir)) != NULL)
     {
         if (cur->d_name[0] != '.')
@@ -43,7 +40,6 @@ void		    Dispatcher::createResponse(Client &client)
     std::map<std::string, std::string>::const_iterator b;
 
 	// HTTP/1.1 200 OK
-	std::cout << "[ createResponse ]" << std::endl;
     client.response = client.res.version + " " + client.res.status_code + "\r\n";
     b = client.res.headers.begin();
     while (b != client.res.headers.end())
@@ -132,20 +128,9 @@ std::string		Dispatcher::getLastModified(std::string path)
 
 bool            Dispatcher::checkCGI(Client &client)
 {
-    //if (client.conf.find("CGI") != client.conf.end())
-    //if (client.req.uri.find(client.conf["CGI"]) != std::string::npos)
-	//	std::cout << "true2" << std::endl;
-	//	client.conf["CGI"] = .bla
-	//	client.req.uri = /directory/.bla
     if (client.conf.find("CGI") != client.conf.end() && client.req.uri.find(client.conf["CGI"]) != std::string::npos)
             return true;
     else if (client.conf.find("php") != client.conf.end() && client.req.uri.find(".php") != std::string::npos)
-	{
-		std::cout << client.conf["php"] << std::endl;
-		std::cout << client.req.uri << std::endl;
-		std::cout << "true2" << std::endl;
             return true;
-	}
-	std::cout << "false " << std::endl;
     return false;
 }
