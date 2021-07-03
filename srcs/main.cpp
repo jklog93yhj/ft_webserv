@@ -67,21 +67,18 @@ int 	main(int ac, char **av)
 			for (std::vector<Client*>::iterator c(s->_clients.begin()); c != s->_clients.end(); ++c)
 			{
 				client = *c;
-				if (ft::FT_FD_ISSET(client->fd, &readSet))
+				if (ft::FT_FD_ISSET(client->fd, &readSet)) // request 요청 처리
 					if (!s->readRequest(c))
 						break ;
-				if (ft::FT_FD_ISSET(client->fd, &writeSet))
+				if (ft::FT_FD_ISSET(client->fd, &writeSet)) // response 요청 처리
 					if (!s->writeResponse(c))
 						break ;
-				//x
 				if (client->write_fd != -1)
-					if (ft::FT_FD_ISSET(client->write_fd, &writeSet))
+					if (ft::FT_FD_ISSET(client->write_fd, &writeSet)) // file write
 						client->writeFile();
-				//마지막으로 체크
 				if (client->read_fd != -1)
 				{
-					//std::cout << "one" << std::endl;
-					if (ft::FT_FD_ISSET(client->read_fd, &readSet))
+					if (ft::FT_FD_ISSET(client->read_fd, &readSet)) // file read
 						client->readFile();
 				}
 			}

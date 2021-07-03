@@ -42,6 +42,7 @@ c == ' ')
 		return (false);
 	}
 
+	//line읽기
 	void	getline(std::string &buffer, std::string &line)
 	{
 		size_t					pos;
@@ -64,6 +65,7 @@ c == ' ')
 		}
 	}
 
+//delim부터 buffer 담기	
 	void	getline(std::string &buffer, std::string &line, char delim)
 	{
 		size_t					pos;

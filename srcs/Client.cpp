@@ -1,6 +1,5 @@
 #include "package.hpp"
 
-
 Client::Client(int filed, fd_set *r, fd_set *w, struct sockaddr_in info)
 : fd(filed), read_fd(-1), write_fd(-1), status(STANDBY), cgi_pid(-1), tmp_fd(-1), rSet(r), wSet(w)
 {
@@ -47,6 +46,7 @@ Client::~Client()
 	g_logger.log("connection closed from " + ip + ":" + std::to_string(port), LOW);
 }
 
+// 읽는상태로 변환(리퀘스트)
 void	Client::setReadState(bool state)
 {
 	if (state)
@@ -55,6 +55,7 @@ void	Client::setReadState(bool state)
 		ft::FT_FD_CLR(fd, rSet);
 }
 
+//쓰기 상태로 변환(리스펀스)
 void	Client::setWriteState(bool state)
 {
 	if (state)
@@ -63,6 +64,7 @@ void	Client::setWriteState(bool state)
 		ft::FT_FD_CLR(fd, wSet);
 }
 
+// 파일읽기로 변환
 void	Client::setFileToRead(bool state)
 {
 	if (read_fd != -1)
@@ -74,6 +76,7 @@ void	Client::setFileToRead(bool state)
 	}
 }
 
+//파일쓰기로 변환
 void	Client::setFileToWrite(bool state)
 {
 	if (write_fd != -1)
@@ -91,7 +94,6 @@ void	Client::readFile()
 	int				ret = 0;
 	int				status = 0;
 
-	std::cout << "[ readFile ] ";
 	if (cgi_pid != -1) // cgi가 주어진 경우
 	{
 		if (waitpid((pid_t)cgi_pid, (int *)&status, (int)WNOHANG) == 0)
@@ -114,20 +116,15 @@ void	Client::readFile()
 	}
 	// config파일을 읽는 단계
 	ret = read(read_fd, buffer, BUFFER_SIZE);
-	std::cout << "[ret] " << std::endl;
-	std::cout << buffer << std::endl;
-	std::cout << "[ret] " << std::endl;
 	// config파일을 body에 추가
 	if (ret >= 0)
 	{
-		std::cout << "ret >= 0 " << std::endl;
 		buffer[ret] = '\0';
 		std::string	tmp(buffer, ret);
 		res.body += tmp;
 	}
 	if (ret <= 0)
 	{
-		std::cout << "ret <= 0 " << std::endl;
 		close(read_fd);
 		unlink(TMP_PATH);
 		setFileToRead(false);
@@ -141,16 +138,7 @@ void	Client::writeFile()
 {
 	int ret = 0;
 
-
-	/*
-	std::cout << "jaiosjcaiosjsoj+==========" << std::endl;
-	std::cout << req.body.c_str() << std::endl;
-	std::cout << "jaiosjcaiosjsoj+==========" << std::endl;
-	*/
-	std::cout << "[ writeFile ]";
 	ret = write(write_fd, req.body.c_str(), req.body.size());
-	std::cout << "ret = " << ret << std::endl;
-	std::cout << "body = " << req.body.c_str() << std::endl;
 	if (ret == -1)
 	{
 		req.body.clear();
@@ -168,7 +156,6 @@ void	Client::writeFile()
 		req.body = req.body.substr(ret);
 	else
 	{
-		std::cout << "writeFile else" << std::endl;
 		req.body.clear();
 		close(write_fd);
 		setFileToWrite(false);
